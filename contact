@@ -1,0 +1,107 @@
+#!/bin/bash
+getprop(){
+    if [ -n "$2" ];then
+        val=$(cat "$1" | fzf -e -f "$2=")
+    else
+        val=$(cat "$1" | fzf)
+    fi
+    val=${val#*=}
+    echo "$val"
+}
+getfile(){
+    if [ -n "$1" ];then
+        file=$(for f in *;do printf "%s: %s\n" "$f" "$(sed ':a;N;$!ba;s/\n/; /g' "$f")";done| fzf -f "$1" | head -n1)
+    else
+        file=$(for f in *;do printf "%s: %s\n" "$f" "$(sed ':a;N;$!ba;s/\n/; /g' "$f")";done| fzf )
+    fi
+    file=$(echo "$file"|cut -d":" -f1)
+    if [ ! -f "$file" ];then
+        echo "File $file not found"
+        exit 1
+    fi
+    echo "$file"
+}
+edit(){
+    file="$1"
+    $EDITOR "$file"
+    filter "$file"
+    rename "$file"
+    }
+filter(){
+    file="$1"
+    sed '/^$/d' -i "$file"
+}
+rename(){
+    file="$1"
+    filter "$file"
+    name=$(getprop "$file" "name")
+    if [ -z "$name" ];then
+        echo "File: $file; No name specified"
+        exit 1
+    fi
+    #echo "$cdir/$name"
+    #echo "$file"
+    if [ "$cdir/$name" != "$file" ];then
+        if [ -f "$name" ];then
+            echo "Contact exists"
+            exit 1
+        fi
+        mv "$file" "$name"
+    fi
+}
+set -e
+cdir=$HOME/.contacts
+mkdir -p "$cdir"
+cd "$cdir"
+command="$1"
+if [ "$command" = "add" ];then
+    tmp=$(mktemp)
+    edit "$tmp"
+elif [ "$command" = "edit" ];then
+    file=$(getfile "$2")
+    edit "$cdir/$file"
+elif [ "$command" = "delete" ];then
+    file=$(getfile "$2")
+    rm "$file"
+elif [ "$command" = "getfile" ];then
+    file=$(getfile "$2")
+    echo "$file"
+elif [ "$command" = "rename-all" ];then
+    for f in *;do
+        rename "$cdir/$f"
+    done
+elif [ "$command" = "mutt-aliases" ];then
+    for f in *;do
+        name=$(getprop "$f" "name")
+        mail=$(getprop "$f" "email")
+        if [ -n "$mail" ];then
+            nick=$(getprop "$f" "nick")
+            if [ -z "$nick" ];then
+                nick="$name"
+            fi
+            nick=$(echo "$nick"|cut -d" " -f1)
+            nick="${nick,,}"
+            printf "alias %s %s <%s>\n" "$nick" "$name" "$mail"
+        fi
+    done
+elif [ "$command" = "help" ];then
+    printf 'Syntax:
+    contact [COMMAND] [NAME] [PROPERTY]
+    Commands:
+        add: Add new contact
+        edit: Edit existing contact
+        delete: Delete contact
+        get: Get property of contact (default)
+        help: Show this message
+        mutt-aliases: Export as mutt aliases.
+        rename-all: Rename all files to the correct name
+'
+elif [ "$command" = "get" ];then
+    file=$(getfile "$2")
+    property=$(getprop "$file" "$3")
+    echo "$property"
+else
+    file=$(getfile)
+    property=$(getprop "$file")
+    echo "$property"
+fi
