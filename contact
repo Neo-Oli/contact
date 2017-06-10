@@ -23,7 +23,11 @@ getfile(){
 }
 edit(){
     file="$1"
-    $EDITOR "$file"
+    if [ -n "$EDITOR" ];then
+        $EDITOR "$file"
+    else
+        vi "$file";
+    fi
     filter "$file"
     rename "$file"
     }
@@ -48,6 +52,18 @@ rename(){
         fi
         mv "$file" "$name"
     fi
+    if [ -d ".git" ];then
+        git add "$name" ||:
+        git commit -m "Updated $name" >/dev/null 2>&1 ||:
+    fi
+}
+delete(){
+    file="$1"
+    rm "$file"
+    if [ -d ".git" ];then
+        git rm "$file" >/dev/null ||:
+        git commit -m "Deleted $file" >/dev/null 2>&1 ||:
+    fi
 }
 set -e
 cdir=$HOME/.contacts
@@ -62,7 +78,7 @@ elif [ "$command" = "edit" ];then
     edit "$cdir/$file"
 elif [ "$command" = "delete" ];then
     file=$(getfile "$2")
-    rm "$file"
+    delete "$file"
 elif [ "$command" = "getfile" ];then
     file=$(getfile "$2")
     echo "$file"
