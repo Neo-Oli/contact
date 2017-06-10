@@ -53,6 +53,7 @@ rename(){
         mv "$file" "$name"
     fi
     if [ -d ".git" ];then
+        git rm "$file" >/dev/null 2>&1||:
         git add "$name" ||:
         git commit -m "Updated $name" >/dev/null 2>&1 ||:
     fi
