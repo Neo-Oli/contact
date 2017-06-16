@@ -1,6 +1,6 @@
 # Contact
 
-This is a command line application for contact management with pipes in mind. 
+This is a command line application for contact management with pipes in mind. It lets you choose a contact with FZF
 
 ```
 Syntax:
