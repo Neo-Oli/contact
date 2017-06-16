@@ -19,7 +19,7 @@ Syntax:
 
 Each contact is saved into a separate file in `~/.contacts`. You can save as many properties as you want. The only one that is required is `name`.
 
-### Example:
+### Example
 
 ```
 name=Max Muster
@@ -52,6 +52,42 @@ termux-telephony-call $(contact) #call someone in you address book
 
 termux-telephony-call $(contact "Max Muster" "mobile") #call Max Muster
 ```
+
+## Installation
+
+### Requirements
+
+You need to install [fzf](https://github.com/junegunn/fzf) and git (for git integration)
+
+### Installation
+Copy the file `contact` to any directory in you `$PATH`. Make sure it's executable.
+```
+cp contact /bin/
+chmod +x /bin/contact
+```
+
+### Enable git integration
+To enable git integration go to the `~/.contacts` folder (create it if you've never run any `contact` command before and run `git init` all changes made with `contact` should now get added and commited automatically. If you have preexisting contacts you need to manually add them all to git and commit them. 
+
+```
+git add *
+git commit -m "Initial commit"
+```
+
+### Installation in Termux
+
+Contact developed on Termux with Termux in mind, but running it on termux requires an additional step.
+
+```
+pkg install git fzf
+cp contact $PREFIX/bin/ #or another directory in your $PATH
+chmod +x $PREFIX/bin/contact
+termux-fix-shebang $PREFIX/bin/contact
+```
+
+## Getting started
+
+To create your first contact run `contact add`. This will open `$EDITOR` or `vi`. You can now add contact information. See the "Example" section for the syntax. `name` is required (as it gets used in the filename).
 
 ## Migrate from abook
 
