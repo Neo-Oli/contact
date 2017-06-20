@@ -68,6 +68,20 @@ delete(){
         git commit -m "Deleted $file" >/dev/null 2>&1 ||:
     fi
 }
+help(){
+   printf 'Syntax:
+    contact [COMMAND] [NAME] [PROPERTY]
+    Commands:
+    add: Add new contact
+    edit: Edit existing contact
+    delete: Delete contact
+    get: Get property of contact (default)
+    help: Show this message
+    mutt-aliases: Export as mutt aliases.
+    rename-all: Rename all files to the correct name
+'
+
+}
 set -e
 cdir=$HOME/.contacts
 mkdir -p "$cdir"
@@ -104,23 +118,16 @@ elif [ "$command" = "mutt-aliases" ];then
         fi
     done
 elif [ "$command" = "help" ];then
-    printf 'Syntax:
-    contact [COMMAND] [NAME] [PROPERTY]
-    Commands:
-    add: Add new contact
-    edit: Edit existing contact
-    delete: Delete contact
-    get: Get property of contact (default)
-    help: Show this message
-    mutt-aliases: Export as mutt aliases.
-    rename-all: Rename all files to the correct name
-    '
+    help
 elif [ "$command" = "get" ];then
     file=$(getfile "$2")
     property=$(getprop "$file" "$3")
     echo "$property"
-else
+elif [ "$command" = "" ];then
     file=$(getfile)
     property=$(getprop "$file")
     echo "$property"
+else
+    help
 fi
+
