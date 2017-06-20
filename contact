@@ -30,7 +30,7 @@ edit(){
     fi
     filter "$file"
     rename "$file"
-    }
+}
 filter(){
     file="$1"
     sed '/^$/d' -i "$file"
@@ -51,9 +51,11 @@ rename(){
             exit 1
         fi
         mv "$file" "$name"
+        if [ -d ".git" ];then
+            git rm "$file" >/dev/null 2>&1||:
+        fi
     fi
     if [ -d ".git" ];then
-        git rm "$file" >/dev/null 2>&1||:
         git add "$name" ||:
         git commit -m "Updated $name" >/dev/null 2>&1 ||:
     fi
@@ -105,14 +107,14 @@ elif [ "$command" = "help" ];then
     printf 'Syntax:
     contact [COMMAND] [NAME] [PROPERTY]
     Commands:
-        add: Add new contact
-        edit: Edit existing contact
-        delete: Delete contact
-        get: Get property of contact (default)
-        help: Show this message
-        mutt-aliases: Export as mutt aliases.
-        rename-all: Rename all files to the correct name
-'
+    add: Add new contact
+    edit: Edit existing contact
+    delete: Delete contact
+    get: Get property of contact (default)
+    help: Show this message
+    mutt-aliases: Export as mutt aliases.
+    rename-all: Rename all files to the correct name
+    '
 elif [ "$command" = "get" ];then
     file=$(getfile "$2")
     property=$(getprop "$file" "$3")
