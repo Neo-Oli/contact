@@ -1,4 +1,40 @@
 #!/bin/bash
+help(){
+    printf 'Syntax:
+    contact [COMMAND] [NAME] [PROPERTY]
+    Commands:
+    add: Add new contact
+    edit: Edit existing contact
+    delete: Delete contact
+    get: Get property of contact (default)
+    git: Interact with the git repositry directly
+        Example: `contact git status`
+        To enable the git repository features of contact you need to run:
+            `contact git init`
+        If you already have contacts you need to manually commit them:
+            `contact git add --all;contact git commit -m "Commit all existing contacts"`
+    help: Show this message
+    mutt-aliases: Export as mutt aliases.
+    rename-all: Rename all files to the correct name
+'
+}
+error(){
+    case $1 in
+        64)
+            msg="No matching contact"
+            ;;
+        65)
+            msg="Please specify name (name=Max Muster)"
+            ;;
+        66)
+            msg="Contact already exists"
+            ;;
+        67)
+            msg="No contacts in storage. Add a contact first"
+    esac
+    >&2 echo "Error: $msg"
+    exit $1
+}
 getprop(){
     if [ -n "$2" ];then
         val=$(cat "$1" | fzf -e -f "$2=")
@@ -9,15 +45,19 @@ getprop(){
     echo "$val"
 }
 getfile(){
+    if [ -z "$(ls -A)" ];then
+        error 67
+    fi
+    files=$(for f in *;do printf "%s: %s\n" "$f" "$(sed ':a;N;$!ba;s/\n/; /g' "$f")";done)
     if [ -n "$1" ];then
-        file=$(for f in *;do printf "%s: %s\n" "$f" "$(sed ':a;N;$!ba;s/\n/; /g' "$f")";done| fzf -f "$1" | head -n1)
+        ret=$(echo "$files" | fzf -f "$1")
+        file=$(echo "$ret" |head -n1)
     else
-        file=$(for f in *;do printf "%s: %s\n" "$f" "$(sed ':a;N;$!ba;s/\n/; /g' "$f")";done| fzf )
+        file=$(echo "$files" | fzf)
     fi
     file=$(echo "$file"|cut -d":" -f1)
     if [ ! -f "$file" ];then
-        echo "File $file not found"
-        exit 1
+        error 64
     fi
     echo "$file"
 }
@@ -40,15 +80,11 @@ rename(){
     filter "$file"
     name=$(getprop "$file" "name")
     if [ -z "$name" ];then
-        echo "File: $file; No name specified"
-        exit 1
+        error 65
     fi
-    #echo "$cdir/$name"
-    #echo "$file"
     if [ "$cdir/$name" != "$file" ];then
         if [ -f "$name" ];then
-            echo "Contact exists"
-            exit 1
+            error 66
         fi
         mv "$file" "$name"
         if [ -d ".git" ];then
@@ -68,20 +104,23 @@ delete(){
         git commit -m "Deleted $file" >/dev/null 2>&1 ||:
     fi
 }
-help(){
-   printf 'Syntax:
-    contact [COMMAND] [NAME] [PROPERTY]
-    Commands:
-    add: Add new contact
-    edit: Edit existing contact
-    delete: Delete contact
-    get: Get property of contact (default)
-    help: Show this message
-    mutt-aliases: Export as mutt aliases.
-    rename-all: Rename all files to the correct name
-'
 
+mutt-aliases(){
+for f in *;do
+    name=$(getprop "$f" "name")
+    mail=$(getprop "$f" "email")
+    if [ -n "$mail" ];then
+        nick=$(getprop "$f" "nick")
+        if [ -z "$nick" ];then
+            nick="$name"
+        fi
+        nick=$(echo "$nick"|cut -d" " -f1)
+        nick="${nick,,}"
+        printf "alias %s %s <%s>\n" "$nick" "$name" "$mail"
+    fi
+done
 }
+
 set -e
 cdir=$HOME/.contacts
 mkdir -p "$cdir"
@@ -104,19 +143,9 @@ elif [ "$command" = "rename-all" ];then
         rename "$cdir/$f"
     done
 elif [ "$command" = "mutt-aliases" ];then
-    for f in *;do
-        name=$(getprop "$f" "name")
-        mail=$(getprop "$f" "email")
-        if [ -n "$mail" ];then
-            nick=$(getprop "$f" "nick")
-            if [ -z "$nick" ];then
-                nick="$name"
-            fi
-            nick=$(echo "$nick"|cut -d" " -f1)
-            nick="${nick,,}"
-            printf "alias %s %s <%s>\n" "$nick" "$name" "$mail"
-        fi
-    done
+    mutt-aliases
+elif [ "$command" = "git" ];then
+    "$@"
 elif [ "$command" = "help" ];then
     help
 elif [ "$command" = "get" ];then
