@@ -6,13 +6,19 @@ This is a command line application for contact management with pipes in mind. It
 Syntax:
     contact [COMMAND] [NAME] [PROPERTY]
     Commands:
-        add: Add new contact
-        edit: Edit existing contact
-        delete: Delete contact
-        get: Get property of contact (default)
-        help: Show this message
-        mutt-aliases: Export as mutt aliases.
-        rename-all: Rename all files to the correct name
+    add: Add new contact
+    edit: Edit existing contact
+    delete: Delete contact
+    get: Get property of contact (default)
+    git: Interact with the git repositry directly
+        Example: `contact git status`
+        To enable the git repository features of contact you need to run:
+            `contact git init`
+        If you already have contacts you need to manually commit them:
+            `contact git add --all;contact git commit -m "Commit all existing contacts"`
+    help: Show this message
+    mutt-aliases: Export as mutt aliases.
+    rename-all: Rename all files to the correct name
 ```
 
 ## Database
