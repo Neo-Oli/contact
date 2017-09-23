@@ -1,0 +1,9 @@
+#compdef _contact contact
+# quick n' dirty zsh completion script for contact
+# To use this completion script, set 
+# `fpath=(/path/to/this/script $fpath)
+# in your ~/.zshrc .
+ function  _contact {
+  _arguments \
+  "1: :(add edit delete get git help mutt-aliases rename-all)"
+}
