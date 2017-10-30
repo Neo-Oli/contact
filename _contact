@@ -1,9 +1,37 @@
-#compdef _contact contact
-# quick n' dirty zsh completion script for contact
-# To use this completion script, set 
-# `fpath=(/path/to/this/script $fpath)
-# in your ~/.zshrc .
- function  _contact {
-  _arguments \
-  "1: :(add edit delete get git help mutt-aliases rename-all)"
+#compdef contact
+_contact_commands() {
+  local -a contact_ary
+  contact_ary=(
+    'add':'add a new contact'
+    'edit':'edit an existing contact'
+    'delete':'delete a contact'
+    'get':'issue a query'
+    'git':'run a git command in the contacts directory'
+    'help':'show the help messages'
+    'mutt-aliases':'export contacts as mutt aliases file'
+    'rename-all':'rename all contacts file according to their contents'
+  )
+  _describe -t commands "contact commands" contact_ary -V contact_commands
 }
+local curcontext="$curcontext" state line
+_arguments -C \
+  '1: :->command' \
+  '*:: :->options'
+
+case $state in
+  (command)
+    _alternative \
+      _contact_commands \
+  ;;
+
+  (options)
+    local -a contact_contacts
+    local contactdir=~/.contacts
+    contact_contacts=(
+      $contactdir/*(N)
+    )
+
+    contact_contacts=( ${contact_contacts#$contactdir/} )
+    _describe -t contacts "contact contacts" contact_contacts
+  ;;
+esac
