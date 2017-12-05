@@ -9,6 +9,7 @@ _contact_commands() {
     'git':'run a git command in the contacts directory'
     'help':'show the help messages'
     'mutt-aliases':'export contacts as mutt aliases file'
+    'vcf-export':'export contacts as .vcf file'
     'rename-all':'rename all contacts file according to their contents'
   )
   _describe -t commands "contact commands" contact_ary -V contact_commands

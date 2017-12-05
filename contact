@@ -15,6 +15,7 @@ help(){
             `contact git add --all;contact git commit -m "Commit all existing contacts"`
     help: Show this message
     mutt-aliases: Export as mutt aliases.
+    vcf-export: Export as .vcf file.
     rename-all: Rename all files to the correct name
 '
 }
@@ -121,6 +122,29 @@ for f in *;do
 done
 }
 
+vcf-export(){
+for f in *;do
+    name=$(getprop "$f" "name")
+    lastname=$(echo "$name"|rev|cut -d' ' -f1|rev);
+    firstname=$(echo "$name"|cut -d' ' -f1);
+    mail=$(getprop "$f" "email")
+    cell=$(getprop "$f" "mobile")
+    work=$(getprop "$f" "work")
+    unix2dos<<- EOF
+BEGIN:VCARD
+VERSION:3.0
+N:$lastname;$firstname;;;
+FN:$name
+TEL;TYPE=CELL:$cell
+TEL;TYPE=WORK:$work
+EMAIL;TYPE=INTERNET;TYPE=PREF;TYPE=HOME:$mail
+END:VCARD
+
+EOF
+done
+}
+
+
 set -e
 cdir=$HOME/.contacts
 mkdir -p "$cdir"
@@ -142,6 +166,8 @@ elif [ "$command" = "rename-all" ];then
     for f in *;do
         rename "$cdir/$f"
     done
+elif [ "$command" = "vcf-export" ];then
+    vcf-export
 elif [ "$command" = "mutt-aliases" ];then
     mutt-aliases
 elif [ "$command" = "git" ];then
