@@ -130,6 +130,7 @@ for f in *;do
     mail=$(getprop "$f" "email")
     cell=$(getprop "$f" "mobile")
     work=$(getprop "$f" "work")
+    home=$(getprop "$f" "home")
     unix2dos<<- EOF
 BEGIN:VCARD
 VERSION:3.0
@@ -137,6 +138,7 @@ N:$lastname;$firstname;;;
 FN:$name
 TEL;TYPE=CELL:$cell
 TEL;TYPE=WORK:$work
+TEL;TYPE=HOME:$home
 EMAIL;TYPE=INTERNET;TYPE=PREF;TYPE=HOME:$mail
 END:VCARD
 
