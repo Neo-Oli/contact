@@ -11,6 +11,7 @@ _contact_commands() {
     'mutt-aliases':'export contacts as mutt aliases file'
     'vcf-export':'export contacts as .vcf file'
     'rename-all':'rename all contacts file according to their contents'
+    'rebuild':'rebuild the cache file'
   )
   _describe -t commands "contact commands" contact_ary -V contact_commands
 }
