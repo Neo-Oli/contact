@@ -3,10 +3,11 @@ help(){
     printf 'Syntax:
     contact [COMMAND] [NAME] [PROPERTY]
     Commands:
+    No command: Interactive prompt
     add: Add new contact
     edit: Edit existing contact
     delete: Delete contact
-    get: Get property of contact (default)
+    get: Get property of contact
     git: Interact with the git repositry directly
         Example: `contact git status`
         To enable the git repository features of contact you need to run:
@@ -17,6 +18,7 @@ help(){
     mutt-aliases: Export as mutt aliases.
     vcf-export: Export as .vcf file.
     rename-all: Rename all files to the correct name
+    rebuild: Rebuild the cache
 '
 }
 error(){
@@ -36,6 +38,20 @@ error(){
     >&2 echo "Error: $msg"
     exit $1
 }
+rebuild(){
+    if [ -z "$(ls -A)" ];then
+        error 67
+    fi
+    files=$(for f in *;do printf "%s: %s\n" "$f" "$(sed ':a;N;$!ba;s/\n/; /g' "$f")";done)
+    mkdir -p $HOME/.cache
+    echo "$files" > $HOME/.cache/contact-cache
+}
+getcache(){
+    if [ ! -f "$HOME/.cache/contact-cache" ];then
+        rebuild
+    fi
+    echo "$(<$HOME/.cache/contact-cache)"
+}
 getprop(){
     if [ -n "$2" ];then
         val=$(cat "$1" | fzf -e -f "$2=")
@@ -46,10 +62,7 @@ getprop(){
     echo "$val"
 }
 getfile(){
-    if [ -z "$(ls -A)" ];then
-        error 67
-    fi
-    files=$(for f in *;do printf "%s: %s\n" "$f" "$(sed ':a;N;$!ba;s/\n/; /g' "$f")";done)
+    files="$(getcache)"
     if [ -n "$1" ];then
         ret=$(echo "$files" | fzf -f "$1")
         file=$(echo "$ret" |head -n1)
@@ -96,6 +109,7 @@ rename(){
         git add "$name" ||:
         git commit -m "Updated $name" >/dev/null 2>&1 ||:
     fi
+    rebuild
 }
 delete(){
     file="$1"
@@ -104,6 +118,7 @@ delete(){
         git rm "$file" >/dev/null ||:
         git commit -m "Deleted $file" >/dev/null 2>&1 ||:
     fi
+    rebuild
 }
 
 mutt-aliases(){
@@ -168,6 +183,9 @@ elif [ "$command" = "rename-all" ];then
     for f in *;do
         rename "$cdir/$f"
     done
+    rebuild
+elif [ "$command" = "rebuild" ];then
+    rebuild
 elif [ "$command" = "vcf-export" ];then
     vcf-export
 elif [ "$command" = "mutt-aliases" ];then
