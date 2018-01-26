@@ -203,6 +203,7 @@ elif [ "$command" = "" ];then
     property=$(getprop "$file")
     echo "$property"
 else
-    help
+    >&2 help
+    exit 100
 fi
 
