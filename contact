@@ -55,7 +55,7 @@ error(){
     exit $1
 }
 rebuild(){
-    chech-files
+    check-files
     files=$(for f in *;do printf "%s: %s\n" "$f" "$(sed ':a;N;$!ba;s/\n/; /g' "$f")";done)
     mkdir -p $HOME/.cache
     echo "$files" > $HOME/.cache/contact-cache
