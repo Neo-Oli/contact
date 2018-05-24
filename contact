@@ -1,5 +1,22 @@
 #!/bin/bash
 help(){
+    printf '\ncontact is a command line contact manager\n\n'
+    help-short
+    printf '\n\nA typical contact looks like this:
+
+name=John Doe
+email=john.doe@doe-trading.com
+mobile=1234567890
+nick=Johnny
+
+You can add any number of properties more: address, country, city, email2, url, xmpp or any custom property.
+
+`contact mutt-aliases` will print all contacts with alias file syntax. It will read the "name", "nick", and "email" properties. You can run `contact mutt-aliases > ~/.mutt/aliases` to update your aliases file.
+
+`contact vcf-export` will format the output in0 vCard syntax, which can then be imported into various other applications. It will read the "name", "email", "mobile", "work", "home", and "phone" properties. Create a .vcf file for importing with `contact vcf-export > ~/contacts.vcf`
+'
+}
+help-short(){
     printf 'Syntax:
     contact [COMMAND] [NAME] [PROPERTY]
     Commands:
@@ -18,8 +35,7 @@ help(){
     mutt-aliases: Export as mutt aliases.
     vcf-export: Export as .vcf file.
     rename-all: Rename all files to the correct name
-    rebuild: Rebuild the cache
-    '
+    rebuild: Rebuild the cache\n'
 }
 error(){
     case $1 in
@@ -33,7 +49,7 @@ error(){
             msg="Contact already exists"
             ;;
         67)
-            msg="No contacts in storage. Add a contact first"
+            msg="No contacts in storage. Add a contact first. Run \`contact help\` for more information"
     esac
     >&2 echo "Error: $msg"
     exit $1
@@ -241,7 +257,8 @@ elif [ "$command" = "" ];then
     property=$(getprop "$file")
     echo "$property"
 else
-    >&2 help
+    >&2 help-short
+    >&2 printf '\nRun `contact help` for more information\n'
     exit 100
 fi
 
