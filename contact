@@ -39,9 +39,7 @@ error(){
     exit $1
 }
 rebuild(){
-    if [ -z "$(ls -A)" ];then
-        error 67
-    fi
+    chech-files
     files=$(for f in *;do printf "%s: %s\n" "$f" "$(sed ':a;N;$!ba;s/\n/; /g' "$f")";done)
     mkdir -p $HOME/.cache
     echo "$files" > $HOME/.cache/contact-cache
@@ -53,6 +51,9 @@ getcache(){
     echo "$(<$HOME/.cache/contact-cache)"
 }
 getprop(){
+    if [ -f "$1" ];then
+        error 64
+    fi
     if [ -n "$2" ];then
         val=$(cat "$1" | fzf -e -f "$2=")
     else
@@ -70,6 +71,7 @@ getall(){
     echo -e "$list"
 }
 getfile(){
+    set -e
     files="$(getcache)"
     if [ -n "$1" ];then
         ret=$(echo "$files" | fzf -f "$1")
@@ -128,8 +130,13 @@ delete(){
     fi
     rebuild
 }
-
+check-files(){
+if [ -z "$(ls -A)" ];then
+    error 67
+fi
+}
 mutt-aliases(){
+check-files
 for f in *;do
     name=$(getprop "$f" "name")
     mail=$(getprop "$f" "email")
@@ -146,6 +153,7 @@ done
 }
 
 vcf-export(){
+check-files
 for f in *;do
     name=$(getprop "$f" "name")
     lastname=$(echo "$name"|rev|cut -d' ' -f1|rev);
