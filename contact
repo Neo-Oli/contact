@@ -67,7 +67,7 @@ getcache(){
     echo "$(<$HOME/.cache/contact-cache)"
 }
 getprop(){
-    if [ -f "$1" ];then
+    if [ ! -f "$1" ];then
         error 64
     fi
     if [ -n "$2" ];then
