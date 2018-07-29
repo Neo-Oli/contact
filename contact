@@ -161,7 +161,9 @@ for f in *;do
         if [ -z "$nick" ];then
             nick="$name"
         fi
-        nick=$(echo "$nick"|cut -d" " -f1)
+        # Replace space with underscore
+        nick="${nick/ /_}"
+        # Lowercase the string
         nick="${nick,,}"
         printf "alias %s %s <%s>\n" "$nick" "$name" "$mail"
     fi
