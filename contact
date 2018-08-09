@@ -25,6 +25,7 @@ help-short(){
     edit: Edit existing contact
     delete: Delete contact
     get: Get property of contact
+    getfiltert: start interactive prompt, but only list properties matching $2
     git: Interact with the git repositry directly
     Example: `contact git status`
     To enable the git repository features of contact you need to run:
@@ -70,10 +71,14 @@ getprop(){
     if [ ! -f "$1" ];then
         error 64
     fi
+    properties="$(< "$1" )"
+    if [ -n "$3" ];then
+        properties="$(echo "$properties" | grep "$3")"
+    fi
     if [ -n "$2" ];then
-        val=$(cat "$1" | fzf -e -f "$2=")
+        val=$(echo "$properties" | fzf -e -f "$2=")
     else
-        val=$(cat "$1" | fzf)
+        val=$(echo "$properties" | fzf)
     fi
     val=${val#*=}
     echo "$val"
@@ -253,6 +258,10 @@ elif [ "$command" = "help" ];then
 elif [ "$command" = "get" ];then
     file=$(getfile "$2")
     property=$(getprop "$file" "$3")
+    echo "$property"
+elif [ "$command" = "getfiltered" ];then
+    file=$(getfile)
+    property=$(getprop "$file" "" "$2")
     echo "$property"
 elif [ "$command" = "" ];then
     file=$(getfile)
