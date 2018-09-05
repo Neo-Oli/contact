@@ -5,6 +5,7 @@ _contact_commands() {
     'add':'add a new contact'
     'edit':'edit an existing contact'
     'delete':'delete a contact'
+    'getfiltered':'start interactive prompt, but only list properties matching $2'
     'get':'issue a query'
     'git':'run a git command in the contacts directory'
     'help':'show the help messages'

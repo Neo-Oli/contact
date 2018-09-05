@@ -25,7 +25,7 @@ help-short(){
     edit: Edit existing contact
     delete: Delete contact
     get: Get property of contact
-    getfiltert: start interactive prompt, but only list properties matching $2
+    getfiltered: start interactive prompt, but only list properties matching $2
     git: Interact with the git repositry directly
     Example: `contact git status`
     To enable the git repository features of contact you need to run:
@@ -181,6 +181,10 @@ for f in *;do
     name=$(getprop "$f" "name")
     lastname=$(echo "$name"|rev|cut -d' ' -f1|rev);
     firstname=$(echo "$name"|cut -d' ' -f1);
+    if [ "$lastname" = "$firstname" ];then
+        lastname=""
+    fi
+    nick=$(getall "$f" "nick")
     mail=$(getall "$f" "email")
     cell=$(getall "$f" "mobile")
     work=$(getall "$f" "work")
@@ -216,6 +220,11 @@ for f in *;do
             out+="EMAIL;TYPE=INTERNET;TYPE=PREF;TYPE=HOME:$e${eol}"
         fi
     done <<< "$mail"
+    while read -r e;do
+        if [ -n "$e" ];then
+            out+="X-ANDROID-CUSTOM:vnd.android.cursor.item/nickname;$e;1;;;;;;;;;;;;;${eol}"
+        fi
+    done <<< "$nick"
     out+="END:VCARD${eol}"
     out+="${eol}"
     echo -ne $out
