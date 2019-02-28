@@ -230,7 +230,9 @@ for f in *;do
     echo -ne $out
 done
 }
-
+template="name=
+email=
+mobile="
 
 set -e
 cdir=$HOME/.contacts
@@ -239,6 +241,7 @@ cd "$cdir"
 command="$1"
 if [ "$command" = "add" ];then
     tmp=$(mktemp)
+    echo "$template" > "$tmp"
     edit "$tmp"
 elif [ "$command" = "edit" ];then
     file=$(getfile "$2")
