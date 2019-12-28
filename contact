@@ -58,14 +58,14 @@ error(){
 rebuild(){
     check-files
     files=$(for f in *;do printf "%s: %s\n" "$f" "$(sed ':a;N;$!ba;s/\n/; /g' "$f")";done)
-    mkdir -p $HOME/.cache
-    echo "$files" > $HOME/.cache/contact-cache
+    mkdir -p "$HOME"/.cache
+    echo "$files" > "$HOME"/.cache/contact-cache
 }
 getcache(){
     if [ ! -f "$HOME/.cache/contact-cache" ];then
         rebuild
     fi
-    echo "$(<$HOME/.cache/contact-cache)"
+    echo "$(<"$HOME"/.cache/contact-cache)"
 }
 getprop(){
     if [ ! -f "$1" ];then
