@@ -118,7 +118,8 @@ edit(){
 }
 filter(){
     file="$1"
-    sed '/^$/d' -i "$file"
+    sed '/^$/d' "$file" > "$file.new"
+    mv "$file.new" "$file"
 }
 rename(){
     file="$1"
