@@ -84,7 +84,7 @@ getprop(){
     echo "$val"
 }
 getall(){
-    val="$(cat "$1" | fzf -e -f "$2=")"
+    val="$(fzf -e -f "$2=" < "$1")"
     list=""
     while read -r line;do
         list+="${line#*=}\n"
