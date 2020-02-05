@@ -171,7 +171,7 @@ for f in *;do
         nick="${nick/ /_}"
         # Lowercase the string
         nick="${nick,,}"
-        printf "alias %s %s <%s>\n" "$nick" "$name" "$mail"
+        printf "alias %s <%s>\n" "$nick" "$mail"
     fi
 done
 }
