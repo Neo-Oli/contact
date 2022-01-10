@@ -191,6 +191,11 @@ for f in *;do
     work=$(getall "$f" "work")
     home=$(getall "$f" "home")
     phone=$(getall "$f" "phone")
+    address=$(getprop "$f" "address"|head -n1)
+    zip=$(getprop "$f" "zip"|head -n1)
+    city=$(getprop "$f" "city"|head -n1)
+    country=$(getprop "$f" "country"|head -n1)
+    birthday=$(getprop "$f" "birthday"|sed -e 's/\.//g' -e 's/-//g')
     eol="\r\n"
     out="BEGIN:VCARD${eol}"
     out+="VERSION:3.0${eol}"
@@ -219,6 +224,12 @@ for f in *;do
             out+="TEL;TYPE=HOME:$e${eol}"
         fi
     done <<< "$home"
+    if         [ -n "$address" ] ||
+        [ -n "$city" ] ||
+        [ -n "$zip" ] ||
+        [ -n "$country" ]         ;then
+            out+="ADR;HOME:;;${address};${city};;${zip};$country${eol}"
+        fi
     while read -r e;do
         if [ -n "$e" ];then
             out+="EMAIL;TYPE=INTERNET;TYPE=PREF;TYPE=HOME:$e${eol}"
