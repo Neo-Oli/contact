@@ -26,7 +26,7 @@ help-short() {
     delete: Delete contact
     get: Get property of contact
     getfiltered: start interactive prompt, but only list properties matching $2
-    git: Interact with the git repositry directly
+    git: Interact with the git repository directly
     Example: `contact git status`
     To enable the git repository features of contact you need to run:
     `contact git init`
