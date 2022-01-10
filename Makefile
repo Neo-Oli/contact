@@ -8,4 +8,7 @@ install: contact
 uninstall:
 	rm -f $(PREFIX)/bin/contact
 
-.PHONY: install uninstall
+lint:
+	npx --package=prettier-plugin-sh prettier --write contact
+
+.PHONY: install uninstall lint
