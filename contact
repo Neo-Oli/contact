@@ -196,6 +196,9 @@ for f in *;do
     out+="VERSION:3.0${eol}"
     out+="N:$lastname;$firstname;;;${eol}"
     out+="FN:$name${eol}"
+    if [ -n "$birthday" ];then
+        out+="BDAY:$birthday${eol}"
+    fi
     while read -r e;do
         if [ -n "$e" ];then
             out+="TEL:$e${eol}"
