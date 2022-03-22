@@ -81,7 +81,7 @@ getprop() {
   else
     val=$(echo "$properties" | fzf)
   fi
-  val=${val#*=}
+  val="$(echo "${val}" | sed 's/.*=//g')"
   echo "$val"
 }
 getall() {
@@ -162,17 +162,24 @@ mutt-aliases() {
   check-files
   for f in *; do
     name=$(getprop "$f" "name")
-    mail=$(getprop "$f" "email")
-    if [ -n "$mail" ]; then
-      nick=$(getprop "$f" "nick")
-      if [ -z "$nick" ]; then
-        nick="$name"
-      fi
-      # Replace space with underscore
-      nick="${nick/ /_}"
-      # Lowercase the string
-      nick="${nick,,}"
-      printf "alias %s <%s>\n" "$nick" "$mail"
+    mails=$(getprop "$f" "email")
+    if [ -n "$mails" ]; then
+      count=0
+      echo "$mails" | while read mail; do
+        nick=$(getprop "$f" "nick")
+        if [ -z "$nick" ]; then
+          nick="$name"
+        fi
+        if [ "$count" -gt 0 ]; then
+          nick="${nick} $count"
+        fi
+        # Replace space with underscore
+        nick="${nick// /_}"
+        # Lowercase the string
+        nick="${nick,,}"
+        count=$((count + 1))
+        printf "alias %s [%s] <%s>\n" "$nick" "$name" "$mail"
+      done
     fi
   done
 }
