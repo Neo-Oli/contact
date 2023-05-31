@@ -13,7 +13,7 @@ You can add any number of properties more: address, country, city, email2, url, 
 
 `contact mutt-aliases` will print all contacts with alias file syntax. It will read the "name", "nick", and "email" properties. You can run `contact mutt-aliases > ~/.mutt/aliases` to update your aliases file.
 
-`contact vcf-export` will format the output in0 vCard syntax, which can then be imported into various other applications. It will read the "name", "email", "mobile", "work", "home", and "phone" properties. Create a .vcf file for importing with `contact vcf-export > ~/contacts.vcf`
+`contact vcf-export` will format the output in vCard syntax, which can then be imported into various other applications. It will read the "name", "email", "mobile", "work", "home", and "phone" properties. Create a .vcf file for importing with `contact vcf-export > ~/contacts.vcf`
 '
 }
 help-short() {
