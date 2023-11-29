@@ -178,7 +178,11 @@ mutt-aliases() {
         # Lowercase the string
         nick="${nick,,}"
         count=$((count + 1))
-        printf "alias %s %s <%s>\n" "$nick" "$name" "$mail"
+        if [ "${CONTACT_SHORT_ALIASES}" = "true" ]; then
+            printf "alias %s %s\n" "$nick" "$mail"
+        else
+            printf "alias %s %s <%s>\n" "$nick" "$name" "$mail"
+        fi
       done
     fi
   done

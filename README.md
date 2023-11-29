@@ -80,6 +80,12 @@ git add *
 git commit -m "Initial commit"
 ```
 
+### Environment variables
+
+Certain advanced features can be set via environment variables:
+
+- `CONTACT_SHORT_ALIASES=true` will cause mutt-aliases to just include the email and not the name
+
 ### Installation in Termux
 
 Contact developed on Termux with Termux in mind, but running it on termux requires an additional step.
