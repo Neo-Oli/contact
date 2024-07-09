@@ -54,7 +54,7 @@ error() {
       ;;
   esac
   echo >&2 "Error: $msg"
-  exit $1
+  exit "$1"
 }
 rebuild() {
   check-files
@@ -208,11 +208,17 @@ vcf-export() {
     city=$(getprop "$f" "city" | head -n1)
     country=$(getprop "$f" "country" | head -n1)
     birthday=$(getprop "$f" "birthday" | sed -e 's/\.//g' -e 's/-//g')
+    from=$(getprop "$f" from | head -n1)
+    note=""
+    if [ -n "$from" ]; then
+        note+="from=$from"
+    fi
     eol="\r\n"
     out="BEGIN:VCARD${eol}"
     out+="VERSION:3.0${eol}"
     out+="N:$lastname;$firstname;;;${eol}"
     out+="FN:$name${eol}"
+    out+="NOTE:$note${eol}"
     if [ -n "$birthday" ]; then
       out+="BDAY:$birthday${eol}"
     fi
@@ -251,7 +257,7 @@ vcf-export() {
     done <<< "$nick"
     out+="END:VCARD${eol}"
     out+="${eol}"
-    echo -ne $out
+    echo -ne "$out"
   done
 }
 template="name=
