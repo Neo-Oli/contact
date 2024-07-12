@@ -216,7 +216,11 @@ vcf-export() {
     eol="\r\n"
     out="BEGIN:VCARD${eol}"
     out+="VERSION:3.0${eol}"
-    out+="N:$lastname;$firstname;;;${eol}"
+    addnick=""
+    if [ -n "$nick" ]; then
+        addnick=" ($nick)"
+    fi
+    out+="N:$lastname;$firstname$addnick;;;${eol}"
     out+="FN:$name${eol}"
     out+="NOTE:$note${eol}"
     if [ -n "$birthday" ]; then
