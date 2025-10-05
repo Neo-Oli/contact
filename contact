@@ -1,8 +1,8 @@
 #!/bin/bash
 help() {
-  printf '\ncontact is a command line contact manager\n\n'
-  help-short
-  printf '\n\nA typical contact looks like this:
+    printf '\ncontact is a command line contact manager\n\n'
+    help-short
+    printf '\n\nA typical contact looks like this:
 
 name=John Doe
 email=john.doe@doe-trading.com
@@ -17,7 +17,7 @@ You can add any number of properties more: address, country, city, email2, url, 
 '
 }
 help-short() {
-  printf 'Syntax:
+    printf 'Syntax:
     contact [COMMAND] [NAME] [PROPERTY]
     Commands:
     No command: Interactive prompt
@@ -39,231 +39,231 @@ help-short() {
     rebuild: Rebuild the cache\n'
 }
 error() {
-  case $1 in
-    64)
-      msg="No matching contact"
-      ;;
-    65)
-      msg="Please specify name (name=Max Muster)"
-      ;;
-    66)
-      msg="Contact already exists"
-      ;;
-    67)
-      msg="No contacts in storage. Add a contact first. Run \`contact help\` for more information"
-      ;;
-  esac
-  echo >&2 "Error: $msg"
-  exit "$1"
+    case $1 in
+        64)
+            msg="No matching contact"
+            ;;
+        65)
+            msg="Please specify name (name=Max Muster)"
+            ;;
+        66)
+            msg="Contact already exists"
+            ;;
+        67)
+            msg="No contacts in storage. Add a contact first. Run \`contact help\` for more information"
+            ;;
+    esac
+    echo >&2 "Error: $msg"
+    exit "$1"
 }
 rebuild() {
-  check-files
-  files=$(for f in *; do printf "%s: %s\n" "$f" "$(sed ':a;N;$!ba;s/\n/; /g' "$f")"; done)
-  mkdir -p "$HOME"/.cache
-  echo "$files" > "$HOME"/.cache/contact-cache
+    check-files
+    files=$(for f in *; do printf "%s: %s\n" "$f" "$(sed ':a;N;$!ba;s/\n/; /g' "$f")"; done)
+    mkdir -p "$HOME"/.cache
+    echo "$files" > "$HOME"/.cache/contact-cache
 }
 getcache() {
-  if [ ! -f "$HOME/.cache/contact-cache" ]; then
-    rebuild
-  fi
-  echo "$(< "$HOME"/.cache/contact-cache)"
+    if [ ! -f "$HOME/.cache/contact-cache" ]; then
+        rebuild
+    fi
+    echo "$(< "$HOME"/.cache/contact-cache)"
 }
 getprop() {
-  if [ ! -f "$1" ]; then
-    error 64
-  fi
-  properties="$(< "$1")"
-  if [ -n "$3" ]; then
-    properties="$(echo "$properties" | grep "$3")"
-  fi
-  if [ -n "$2" ]; then
-    val=$(echo "$properties" | fzf -e -f "$2=")
-  else
-    val=$(echo "$properties" | fzf)
-  fi
-  val="$(echo "${val}" | sed 's/.*=//g')"
-  echo "$val"
+    if [ ! -f "$1" ]; then
+        error 64
+    fi
+    properties="$(< "$1")"
+    if [ -n "$3" ]; then
+        properties="$(echo "$properties" | grep "$3")"
+    fi
+    if [ -n "$2" ]; then
+        val=$(echo "$properties" | fzf -e -f "$2=")
+    else
+        val=$(echo "$properties" | fzf)
+    fi
+    val="$(echo "${val}" | sed 's/.*=//g')"
+    echo "$val"
 }
 getall() {
-  val="$(fzf -e -f "$2=" < "$1")"
-  list=""
-  while read -r line; do
-    list+="${line#*=}\n"
-  done <<< "$val"
-  echo -e "$list"
+    val="$(fzf -e -f "$2=" < "$1")"
+    list=""
+    while read -r line; do
+        list+="${line#*=}\n"
+    done <<< "$val"
+    echo -e "$list"
 }
 getfile() {
-  set -e
-  files="$(getcache)"
-  if [ -n "$1" ]; then
-    ret=$(echo "$files" | fzf -f "$1")
-    file=$(echo "$ret" | head -n1)
-  else
-    file=$(echo "$files" | fzf)
-  fi
-  file=$(echo "$file" | cut -d":" -f1)
-  if [ ! -f "$file" ]; then
-    error 64
-  fi
-  echo "$file"
+    set -e
+    files="$(getcache)"
+    if [ -n "$1" ]; then
+        ret=$(echo "$files" | fzf -f "$1")
+        file=$(echo "$ret" | head -n1)
+    else
+        file=$(echo "$files" | fzf)
+    fi
+    file=$(echo "$file" | cut -d":" -f1)
+    if [ ! -f "$file" ]; then
+        error 64
+    fi
+    echo "$file"
 }
 edit() {
-  file="$1"
-  if [ -n "$EDITOR" ]; then
-    $EDITOR "$file"
-  else
-    vi "$file"
-  fi
-  filter "$file"
-  rename "$file"
+    file="$1"
+    if [ -n "$EDITOR" ]; then
+        $EDITOR "$file"
+    else
+        vi "$file"
+    fi
+    filter "$file"
+    rename "$file"
 }
 filter() {
-  file="$1"
-  sed '/^$/d' "$file" > "$file.new"
-  mv "$file.new" "$file"
+    file="$1"
+    sed '/^$/d' "$file" > "$file.new"
+    mv "$file.new" "$file"
 }
 rename() {
-  file="$1"
-  filter "$file"
-  name=$(getprop "$file" "name")
-  if [ -z "$name" ]; then
-    error 65
-  fi
-  if [ "$cdir/$name" != "$file" ]; then
-    if [ -f "$name" ]; then
-      error 66
+    file="$1"
+    filter "$file"
+    name=$(getprop "$file" "name")
+    if [ -z "$name" ]; then
+        error 65
     fi
-    mv "$file" "$name"
+    if [ "$cdir/$name" != "$file" ]; then
+        if [ -f "$name" ]; then
+            error 66
+        fi
+        mv "$file" "$name"
+        if [ -d ".git" ]; then
+            git rm "$file" > /dev/null 2>&1 || :
+        fi
+    fi
     if [ -d ".git" ]; then
-      git rm "$file" > /dev/null 2>&1 || :
+        git add "$name" || :
+        git commit -m "Updated $name" > /dev/null 2>&1 || :
     fi
-  fi
-  if [ -d ".git" ]; then
-    git add "$name" || :
-    git commit -m "Updated $name" > /dev/null 2>&1 || :
-  fi
-  rebuild
+    rebuild
 }
 delete() {
-  file="$1"
-  rm "$file"
-  if [ -d ".git" ]; then
-    git rm "$file" > /dev/null || :
-    git commit -m "Deleted $file" > /dev/null 2>&1 || :
-  fi
-  rebuild
+    file="$1"
+    rm "$file"
+    if [ -d ".git" ]; then
+        git rm "$file" > /dev/null || :
+        git commit -m "Deleted $file" > /dev/null 2>&1 || :
+    fi
+    rebuild
 }
 check-files() {
-  if [ -z "$(ls -A)" ]; then
-    error 67
-  fi
+    if [ -z "$(ls -A)" ]; then
+        error 67
+    fi
 }
 mutt-aliases() {
-  check-files
-  for f in *; do
-    name=$(getprop "$f" "name")
-    mails=$(getprop "$f" "email")
-    if [ -n "$mails" ]; then
-      count=0
-      echo "$mails" | while read mail; do
-        nick=$(getprop "$f" "nick")
-        if [ -z "$nick" ]; then
-          nick="$name"
+    check-files
+    for f in *; do
+        name=$(getprop "$f" "name")
+        mails=$(getprop "$f" "email")
+        if [ -n "$mails" ]; then
+            count=0
+            echo "$mails" | while read mail; do
+                nick=$(getprop "$f" "nick")
+                if [ -z "$nick" ]; then
+                    nick="$name"
+                fi
+                if [ "$count" -gt 0 ]; then
+                    nick="${nick} $count"
+                fi
+                # Replace space with underscore
+                nick="${nick// /_}"
+                # Lowercase the string
+                nick="${nick,,}"
+                count=$((count + 1))
+                if [ "${CONTACT_SHORT_ALIASES}" = "true" ]; then
+                    printf "alias %s %s\n" "$nick" "$mail"
+                else
+                    printf "alias %s %s <%s>\n" "$nick" "$name" "$mail"
+                fi
+            done
         fi
-        if [ "$count" -gt 0 ]; then
-          nick="${nick} $count"
-        fi
-        # Replace space with underscore
-        nick="${nick// /_}"
-        # Lowercase the string
-        nick="${nick,,}"
-        count=$((count + 1))
-        if [ "${CONTACT_SHORT_ALIASES}" = "true" ]; then
-            printf "alias %s %s\n" "$nick" "$mail"
-        else
-            printf "alias %s %s <%s>\n" "$nick" "$name" "$mail"
-        fi
-      done
-    fi
-  done
+    done
 }
 
 vcf-export() {
-  check-files
-  for f in *; do
-    name=$(getprop "$f" "name")
-    lastname=$(echo "$name" | rev | cut -d' ' -f1 | rev)
-    firstname=$(echo "$name" | rev | cut -d' ' -f2- | rev)
+    check-files
+    for f in *; do
+        name=$(getprop "$f" "name")
+        lastname=$(echo "$name" | rev | cut -d' ' -f1 | rev)
+        firstname=$(echo "$name" | rev | cut -d' ' -f2- | rev)
 
-    if [ "$lastname" = "$firstname" ]; then
-      lastname=""
-    fi
-    nick=$(getall "$f" "nick")
-    mail=$(getall "$f" "email")
-    cell=$(getall "$f" "mobile")
-    work=$(getall "$f" "work")
-    home=$(getall "$f" "home")
-    phone=$(getall "$f" "phone")
-    address=$(getprop "$f" "address" | head -n1)
-    zip=$(getprop "$f" "zip" | head -n1)
-    city=$(getprop "$f" "city" | head -n1)
-    country=$(getprop "$f" "country" | head -n1)
-    birthday=$(getprop "$f" "birthday" | sed -e 's/\.//g' -e 's/-//g')
-    from=$(getprop "$f" from | head -n1)
-    note=""
-    if [ -n "$from" ]; then
-        note+="from=$from"
-    fi
-    eol="\r\n"
-    out="BEGIN:VCARD${eol}"
-    out+="VERSION:3.0${eol}"
-    addnick=""
-    if [ -n "$nick" ]; then
-        addnick=" ($nick)"
-    fi
-    out+="N:$lastname;$firstname$addnick;;;${eol}"
-    out+="FN:$name${eol}"
-    out+="NOTE:$note${eol}"
-    if [ -n "$birthday" ]; then
-      out+="BDAY:$birthday${eol}"
-    fi
-    while read -r e; do
-      if [ -n "$e" ]; then
-        out+="TEL:$e${eol}"
-      fi
-    done <<< "$phone"
-    while read -r e; do
-      if [ -n "$e" ]; then
-        out+="TEL;TYPE=CELL:$e${eol}"
-      fi
-    done <<< "$cell"
-    while read -r e; do
-      if [ -n "$e" ]; then
-        out+="TEL;TYPE=WORK:$work${eol}"
-      fi
-    done <<< "$work"
-    while read -r e; do
-      if [ -n "$e" ]; then
-        out+="TEL;TYPE=HOME:$e${eol}"
-      fi
-    done <<< "$home"
-    if [ -n "$address" ] || [ -n "$city" ] || [ -n "$zip" ] || [ -n "$country" ]; then
-      out+="ADR;HOME:;;${address};${city};;${zip};$country${eol}"
-    fi
-    while read -r e; do
-      if [ -n "$e" ]; then
-        out+="EMAIL;TYPE=INTERNET;TYPE=PREF;TYPE=HOME:$e${eol}"
-      fi
-    done <<< "$mail"
-    while read -r e; do
-      if [ -n "$e" ]; then
-        out+="X-ANDROID-CUSTOM:vnd.android.cursor.item/nickname;$e;1;;;;;;;;;;;;;${eol}"
-      fi
-    done <<< "$nick"
-    out+="END:VCARD${eol}"
-    out+="${eol}"
-    echo -ne "$out"
-  done
+        if [ "$lastname" = "$firstname" ]; then
+            lastname=""
+        fi
+        nick=$(getall "$f" "nick")
+        mail=$(getall "$f" "email")
+        cell=$(getall "$f" "mobile")
+        work=$(getall "$f" "work")
+        home=$(getall "$f" "home")
+        phone=$(getall "$f" "phone")
+        address=$(getprop "$f" "address" | head -n1)
+        zip=$(getprop "$f" "zip" | head -n1)
+        city=$(getprop "$f" "city" | head -n1)
+        country=$(getprop "$f" "country" | head -n1)
+        birthday=$(getprop "$f" "birthday" | sed -e 's/\.//g' -e 's/-//g')
+        from=$(getprop "$f" from | head -n1)
+        note=""
+        if [ -n "$from" ]; then
+            note+="from=$from"
+        fi
+        eol="\r\n"
+        out="BEGIN:VCARD${eol}"
+        out+="VERSION:3.0${eol}"
+        addnick=""
+        if [ -n "$nick" ]; then
+            addnick=" ($nick)"
+        fi
+        out+="N:$lastname;$firstname$addnick;;;${eol}"
+        out+="FN:$name${eol}"
+        out+="NOTE:$note${eol}"
+        if [ -n "$birthday" ]; then
+            out+="BDAY:$birthday${eol}"
+        fi
+        while read -r e; do
+            if [ -n "$e" ]; then
+                out+="TEL:$e${eol}"
+            fi
+        done <<< "$phone"
+        while read -r e; do
+            if [ -n "$e" ]; then
+                out+="TEL;TYPE=CELL:$e${eol}"
+            fi
+        done <<< "$cell"
+        while read -r e; do
+            if [ -n "$e" ]; then
+                out+="TEL;TYPE=WORK:$work${eol}"
+            fi
+        done <<< "$work"
+        while read -r e; do
+            if [ -n "$e" ]; then
+                out+="TEL;TYPE=HOME:$e${eol}"
+            fi
+        done <<< "$home"
+        if [ -n "$address" ] || [ -n "$city" ] || [ -n "$zip" ] || [ -n "$country" ]; then
+            out+="ADR;HOME:;;${address};${city};;${zip};$country${eol}"
+        fi
+        while read -r e; do
+            if [ -n "$e" ]; then
+                out+="EMAIL;TYPE=INTERNET;TYPE=PREF;TYPE=HOME:$e${eol}"
+            fi
+        done <<< "$mail"
+        while read -r e; do
+            if [ -n "$e" ]; then
+                out+="X-ANDROID-CUSTOM:vnd.android.cursor.item/nickname;$e;1;;;;;;;;;;;;;${eol}"
+            fi
+        done <<< "$nick"
+        out+="END:VCARD${eol}"
+        out+="${eol}"
+        echo -ne "$out"
+    done
 }
 template="name=
 email=
@@ -275,47 +275,47 @@ mkdir -p "$cdir"
 cd "$cdir"
 command="$1"
 if [ "$command" = "add" ]; then
-  tmp=$(mktemp)
-  echo "$template" > "$tmp"
-  edit "$tmp"
+    tmp=$(mktemp)
+    echo "$template" > "$tmp"
+    edit "$tmp"
 elif [ "$command" = "edit" ]; then
-  file=$(getfile "$2")
-  edit "$cdir/$file"
+    file=$(getfile "$2")
+    edit "$cdir/$file"
 elif [ "$command" = "delete" ]; then
-  file=$(getfile "$2")
-  delete "$file"
+    file=$(getfile "$2")
+    delete "$file"
 elif [ "$command" = "getfile" ]; then
-  file=$(getfile "$2")
-  echo "$file"
+    file=$(getfile "$2")
+    echo "$file"
 elif [ "$command" = "rename-all" ]; then
-  for f in *; do
-    rename "$cdir/$f"
-  done
-  rebuild
+    for f in *; do
+        rename "$cdir/$f"
+    done
+    rebuild
 elif [ "$command" = "rebuild" ]; then
-  rebuild
+    rebuild
 elif [ "$command" = "vcf-export" ]; then
-  vcf-export
+    vcf-export
 elif [ "$command" = "mutt-aliases" ]; then
-  mutt-aliases
+    mutt-aliases
 elif [ "$command" = "git" ]; then
-  "$@"
+    "$@"
 elif [ "$command" = "help" ]; then
-  help
+    help
 elif [ "$command" = "get" ]; then
-  file=$(getfile "$2")
-  property=$(getprop "$file" "$3")
-  echo "$property"
+    file=$(getfile "$2")
+    property=$(getprop "$file" "$3")
+    echo "$property"
 elif [ "$command" = "getfiltered" ]; then
-  file=$(getfile)
-  property=$(getprop "$file" "" "$2")
-  echo "$property"
+    file=$(getfile)
+    property=$(getprop "$file" "" "$2")
+    echo "$property"
 elif [ "$command" = "" ]; then
-  file=$(getfile)
-  property=$(getprop "$file")
-  echo "$property"
+    file=$(getfile)
+    property=$(getprop "$file")
+    echo "$property"
 else
-  help-short >&2
-  printf >&2 '\nRun `contact help` for more information\n'
-  exit 100
+    help-short >&2
+    printf >&2 '\nRun `contact help` for more information\n'
+    exit 100
 fi
