@@ -271,7 +271,8 @@ vcf-export() {
 }
 template="name=
 email=
-mobile="
+mobile=
+from="
 
 set -e
 cdir="$HOME"/.contacts
