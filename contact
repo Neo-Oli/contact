@@ -222,7 +222,7 @@ vcf-export() {
             addnick=" ($nick)"
         fi
         addfrom=""
-        if [ -n "$nick" ]; then
+        if [ -n "$from" ]; then
             addfrom=" [$from]"
         fi
         out+="N:$lastname$addfrom;$firstname$addnick;;;${eol}"
