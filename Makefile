@@ -9,6 +9,7 @@ uninstall:
 	rm -f $(PREFIX)/bin/contact
 
 lint:
-	npx --package=prettier-plugin-sh prettier --write contact
+	npm install
+	npm run lint
 
 .PHONY: install uninstall lint

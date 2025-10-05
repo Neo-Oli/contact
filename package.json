@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "lint": "prettier --plugin=prettier-plugin-sh --parser sh --write contact"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "prettier-plugin-sh": "^0.18.0"
+  }
+}
