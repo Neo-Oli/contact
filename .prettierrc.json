@@ -1,0 +1,12 @@
+{
+    "arrowParens": "always",
+    "plugins": [
+        "prettier-plugin-sh"
+    ],
+    "printWidth": 80,
+    "semi": false,
+    "singleQuote": true,
+    "tabWidth": 4,
+    "trailingComma": "all",
+    "useTabs": false
+}
