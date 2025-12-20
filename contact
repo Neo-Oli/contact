@@ -58,7 +58,7 @@ error() {
 }
 rebuild() {
     check-files
-    files=$(for f in *; do printf "%s: %s\n" "$f" "$(sed ':a;N;$!ba;s/\n/; /g' "$f")"; done)
+    files=$(for f in *; do printf "%s: %s\n" "$f" "$(grep -v '^#' "$f" | awk '{printf "%s; ", $0} END{print ""}')"; done)
     mkdir -p "$HOME"/.cache
     echo "$files" > "$HOME"/.cache/contact-cache
 }
@@ -72,7 +72,7 @@ getprop() {
     if [ ! -f "$1" ]; then
         error 64
     fi
-    properties="$(< "$1")"
+    properties="$(sed '/^#/d' "$1")"
     if [ -n "$3" ]; then
         properties="$(echo "$properties" | grep "$3")"
     fi
@@ -85,7 +85,7 @@ getprop() {
     echo "$val"
 }
 getall() {
-    val="$(fzf -e -f "$2=" < "$1")"
+    val="$(sed '/^#/d' "$1" | fzf -e -f "$2=")"
     list=""
     while read -r line; do
         list+="${line#*=}\n"
@@ -165,7 +165,7 @@ mutt-aliases() {
         mails=$(getprop "$f" "email")
         if [ -n "$mails" ]; then
             count=0
-            echo "$mails" | while read mail; do
+            echo "$mails" | while read -r mail; do
                 nick=$(getprop "$f" "nick")
                 if [ -z "$nick" ]; then
                     nick="$name"
