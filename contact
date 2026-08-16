@@ -252,7 +252,7 @@ vcf-export() {
             fi
         done <<< "$home"
         if [ -n "$address" ] || [ -n "$city" ] || [ -n "$zip" ] || [ -n "$country" ]; then
-            out+="ADR;HOME:;;${address};${city};;${zip};$country${eol}"
+            out+="ADR;TYPE=HOME:;;${address};${city};;${zip};$country${eol}"
         fi
         while read -r e; do
             if [ -n "$e" ]; then
